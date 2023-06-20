@@ -1,0 +1,77 @@
+;
+; KMDF_ICMP.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=KMDF_ICMP.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+KMDF_ICMP_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+KMDF_ICMP.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%KMDF_ICMP.DeviceDesc%=KMDF_ICMP_Device, Root\KMDF_ICMP ; TODO: edit hw-id
+
+[KMDF_ICMP_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+KMDF_ICMP.sys
+
+;-------------- Service installation
+[KMDF_ICMP_Device.NT.Services]
+AddService = KMDF_ICMP,%SPSVCINST_ASSOCSERVICE%, KMDF_ICMP_Service_Inst
+
+; -------------- KMDF_ICMP driver install sections
+[KMDF_ICMP_Service_Inst]
+DisplayName    = %KMDF_ICMP.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\KMDF_ICMP.sys
+
+;
+;--- KMDF_ICMP_Device Coinstaller installation ------
+;
+
+[KMDF_ICMP_Device.NT.CoInstallers]
+AddReg=KMDF_ICMP_Device_CoInstaller_AddReg
+CopyFiles=KMDF_ICMP_Device_CoInstaller_CopyFiles
+
+[KMDF_ICMP_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[KMDF_ICMP_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[KMDF_ICMP_Device.NT.Wdf]
+KmdfService =  KMDF_ICMP, KMDF_ICMP_wdfsect
+[KMDF_ICMP_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "KMDF_ICMP Installation Disk"
+KMDF_ICMP.DeviceDesc = "KMDF_ICMP Device"
+KMDF_ICMP.SVCDESC = "KMDF_ICMP Service"
